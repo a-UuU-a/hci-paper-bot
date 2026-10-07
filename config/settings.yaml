@@ -20,6 +20,7 @@ slack:
 
 collection:
   dblp_api_url: https://dblp.org/search/publ/api
+  dblp_sparql_url: https://sparql.dblp.org/sparql
   page_size: 1000
   request_interval: 1.0
   max_enrichment_attempts: 50

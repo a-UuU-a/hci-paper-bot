@@ -52,6 +52,7 @@ class SlackSettings(ConfigModel):
 
 class CollectionSettings(ConfigModel):
     dblp_api_url: str = "https://dblp.org/search/publ/api"
+    dblp_sparql_url: str = "https://sparql.dblp.org/sparql"
     page_size: int = Field(default=1000, ge=1, le=1000)
     request_interval: float = Field(default=1, ge=0)
     max_enrichment_attempts: int = Field(default=50, ge=1)
