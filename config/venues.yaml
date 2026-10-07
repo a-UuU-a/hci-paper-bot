@@ -19,7 +19,7 @@ venues:
     enabled: true
     weight: 1.0
     dblp_stream: conf/ACMdis
-    dblp_venues: [DIS]
+    dblp_venues: [DIS, Conference on Designing Interactive Systems]
   - id: cscw
     name: CSCW
     publisher: acm
@@ -61,4 +61,3 @@ venues:
     weight: 1.0
     dblp_stream: conf/vr
     dblp_venues: [VR, IEEE VR]
-

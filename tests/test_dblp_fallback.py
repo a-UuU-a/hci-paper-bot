@@ -5,7 +5,7 @@ import httpx
 import pytest
 
 from src.collectors.dblp import DBLPCollector
-from src.config import CollectionSettings, Venue
+from src.config import CollectionSettings, Venue, load_config
 from src.errors import APIError, BotError
 
 
@@ -106,6 +106,30 @@ def test_fallback_still_excludes_companion_volumes_and_editorials(http_factory, 
 
     collector = DBLPCollector(http_factory(handler), CollectionSettings(request_interval=0))
     assert [paper.title for paper in collector.collect(venues[0], 2025)] == ["First Paper"]
+
+
+def test_dis_formal_booktitle_is_accepted_but_companion_is_excluded(http_factory):
+    _, venues = load_config()
+    venue = next(venue for venue in venues if venue.id == "dis")
+
+    def handler(request):
+        if request.url.host == "dblp.org":
+            return httpx.Response(403)
+        return response(
+            [
+                binding("dis", venue="Conference on Designing Interactive Systems"),
+                binding(
+                    "companion",
+                    venue="Conference on Designing Interactive Systems (Companion Volume)",
+                ),
+            ]
+        )
+
+    collector = DBLPCollector(http_factory(handler), CollectionSettings(request_interval=0))
+    papers = collector.collect(venue, 2025)
+    assert len(papers) == 1
+    assert papers[0].venue == "DIS"
+    assert papers[0].title == "Dis Paper"
 
 
 @pytest.mark.parametrize("year,issue", [(2024, "CSCW2"), (2025, "7")])
