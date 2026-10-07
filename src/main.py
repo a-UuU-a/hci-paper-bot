@@ -12,7 +12,7 @@ from src.collectors.crossref import CrossrefCollector
 from src.collectors.dblp import DBLPCollector
 from src.collectors.openalex import OpenAlexCollector
 from src.config import DEFAULT_CONFIG_DIR, Credentials, load_config
-from src.database.migrate import migrate_database
+from src.database.migrate import check_database_connection, migrate_database
 from src.database.orm import SQLAlchemyRepository, create_database_engine
 from src.database.supabase import MemoryRepository, SupabaseRepository
 from src.errors import BotError
@@ -51,16 +51,24 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--fixture", type=Path, help="Use local paper JSON (requires --dry-run)")
     parser.add_argument("--no-llm", action="store_true", help="Show original abstract excerpts")
     parser.add_argument("--year", type=int, help="End year for the publication window")
-    parser.add_argument(
+    database_commands = parser.add_mutually_exclusive_group()
+    database_commands.add_argument(
         "--init-db",
         action="store_true",
         help="Apply database migrations using DATABASE_URL, then exit",
+    )
+    database_commands.add_argument(
+        "--check-db",
+        action="store_true",
+        help="Check DATABASE_URL connectivity without migrations or data writes, then exit",
     )
     args = parser.parse_args(argv)
     if args.fixture and not args.dry_run:
         parser.error("--fixture requires --dry-run")
     if args.init_db and (args.dry_run or args.fixture):
         parser.error("--init-db cannot be combined with --dry-run or --fixture")
+    if args.check_db and (args.dry_run or args.fixture):
+        parser.error("--check-db cannot be combined with --dry-run or --fixture")
     if args.year is not None and not 1900 <= args.year <= 2200:
         parser.error("--year must be between 1900 and 2200")
     logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
@@ -72,6 +80,9 @@ def main(argv: list[str] | None = None) -> int:
     engine = None
     try:
         credentials = Credentials.from_env()
+        if args.check_db:
+            check_database_connection(credentials.database_url.get_secret_value())
+            return 0
         if args.init_db:
             migrate_database(credentials.database_url.get_secret_value())
             return 0

@@ -36,6 +36,8 @@ uv run python -m src.main --dry-run
 
 DBパスワードに`@`・`:`・`/`・`#`等が含まれる場合は、URLのパスワード部分をURLエンコードしてください。`postgresql://...`を貼り付ければ自動的にpsycopgドライバを使用します。PostgreSQLへの通信は初期設定でTLSを使用します。
 
+GitHub ActionsではIPv4で接続するため、Supabaseの **Direct connectionではなくSession pooler（5432）** を使ってください。ホスト・ユーザー名も異なるため、Direct connectionのポートだけ変えず、Connect画面からSession poolerのURI全体をコピーします。
+
 | 環境変数 | 用途 |
 | --- | --- |
 | `SLACK_WEBHOOK_URL` | Slack Incoming Webhook |
@@ -69,6 +71,7 @@ uv run python -m src.main
 
 - [daily-paper.yml](.github/workflows/daily-paper.yml): 毎日22:00 UTC（翌日07:00 JST）頃に本番実行。
 - Actions → Daily HCI Paper → Run workflow: 手動実行。最初は`dry_run=true`で確認し、投稿する場合はチェックを外します。
+- DB接続だけを確認する場合は、Run workflowの`check_database`にチェックを入れます。`dry_run`より優先され、`SELECT 1`だけを実行します。Slack投稿・LLM利用・マイグレーション・データ保存は行いません。ローカルでは`uv run python -m src.main --check-db`を使えます。
 - [test.yml](.github/workflows/test.yml): push / PRでRuff・pytest・オフラインプレビューを実行。テスト用PostgreSQL 16でORM・マイグレーションも検証します。
 
 定期実行はデフォルトブランチにあるWorkflowが対象です。開始時刻には遅延があり得ます。同一リポジトリの定期・手動実行はconcurrencyで直列化しています。他のリポジトリやローカルから同時に本番実行しないでください。

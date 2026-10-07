@@ -4,10 +4,11 @@ from pathlib import Path
 from alembic import command
 from alembic.config import Config
 from alembic.util.exc import CommandError
-from sqlalchemy import inspect
+from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
+from src.database.errors import safe_database_error
 from src.database.models import Base
 from src.database.orm import create_database_engine
 from src.errors import BotError
@@ -36,10 +37,22 @@ def upgrade_database(engine: Engine) -> None:
                 command.stamp(config, "0001")
                 logger.info("Existing paper database adopted by Alembic")
             command.upgrade(config, "head")
-    except (SQLAlchemyError, CommandError):
-        raise BotError(
-            "Database migration failed; check DATABASE_URL, connection and schema"
-        ) from None
+    except SQLAlchemyError as exc:
+        raise BotError("Database migration failed: " + safe_database_error(exc)) from None
+    except CommandError:
+        raise BotError("Database migration failed; check the Alembic migration history") from None
+
+
+def check_database_connection(database_url: str) -> None:
+    engine = create_database_engine(database_url)
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        logger.info("Database connection OK (no migrations or data writes)")
+    except SQLAlchemyError as exc:
+        raise BotError("Database connection failed: " + safe_database_error(exc)) from None
+    finally:
+        engine.dispose()
 
 
 def migrate_database(database_url: str) -> None:

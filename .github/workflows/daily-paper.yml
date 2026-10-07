@@ -9,6 +9,10 @@ on:
         description: Preview without Slack delivery or database writes
         type: boolean
         default: true
+      check_database:
+        description: Check database connection only, without posting or migrations
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -34,6 +38,7 @@ jobs:
         run: uv sync --frozen --no-dev
       - name: Run HCI Paper Bot
         env:
+          CHECK_DATABASE: ${{ github.event_name == 'workflow_dispatch' && inputs.check_database }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -44,7 +49,9 @@ jobs:
           OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}
           METADATA_EMAIL: ${{ vars.METADATA_EMAIL }}
         run: |
-          if [ "$DRY_RUN" = "true" ]; then
+          if [ "$CHECK_DATABASE" = "true" ]; then
+            uv run --frozen --no-dev python -m src.main --check-db
+          elif [ "$DRY_RUN" = "true" ]; then
             uv run --frozen --no-dev python -m src.main --dry-run
           else
             if [ -n "$DATABASE_URL" ]; then
