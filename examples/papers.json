@@ -1,0 +1,15 @@
+[
+  {
+    "id": "sha256:demo-paper",
+    "title": "Example: Exploring Tactile Feedback in Virtual Reality",
+    "authors": ["Alice Example", "Bob Example", "Carol Example", "Dan Example"],
+    "venue": "CHI",
+    "year": 2025,
+    "abstract": "VR環境における触覚フィードバックの設計を検討するため、試作システムを開発した。参加者による操作課題とインタビューを通じて、提示方法ごとの使いやすさと体験の違いを比較し、設計上の課題を整理した。",
+    "doi": null,
+    "url": "https://example.org/demo-paper",
+    "citation_count": 0,
+    "topics": ["Virtual Reality", "Haptics", "Interaction"],
+    "source": "demo"
+  }
+]

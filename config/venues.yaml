@@ -1,0 +1,64 @@
+venues:
+  - id: chi
+    name: CHI
+    publisher: acm
+    enabled: true
+    weight: 1.0
+    dblp_stream: conf/chi
+    dblp_venues: [CHI]
+  - id: uist
+    name: UIST
+    publisher: acm
+    enabled: true
+    weight: 1.0
+    dblp_stream: conf/uist
+    dblp_venues: [UIST]
+  - id: dis
+    name: DIS
+    publisher: acm
+    enabled: true
+    weight: 1.0
+    dblp_stream: conf/ACMdis
+    dblp_venues: [DIS]
+  - id: cscw
+    name: CSCW
+    publisher: acm
+    enabled: true
+    weight: 1.0
+    dblp_stream: conf/cscw
+    dblp_venues: [CSCW]
+    journal_stream: journals/pacmhci
+    # PACMHCI switched from named issues to numeric issues in 2025.
+    # Add newly published CSCW issues here; never include the whole journal.
+    journal_issues:
+      2025: ["2", "7"]
+      2026: ["2"]
+  - id: tei
+    name: TEI
+    publisher: acm
+    enabled: true
+    weight: 1.0
+    dblp_stream: conf/tei
+    dblp_venues: [TEI]
+  - id: iui
+    name: IUI
+    publisher: acm
+    enabled: true
+    weight: 1.0
+    dblp_stream: conf/iui
+    dblp_venues: [IUI]
+  - id: ismar
+    name: ISMAR
+    publisher: ieee
+    enabled: true
+    weight: 1.0
+    dblp_stream: conf/ismar
+    dblp_venues: [ISMAR]
+  - id: ieee-vr
+    name: IEEE VR
+    publisher: ieee
+    enabled: true
+    weight: 1.0
+    dblp_stream: conf/vr
+    dblp_venues: [VR, IEEE VR]
+

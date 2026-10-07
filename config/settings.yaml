@@ -1,0 +1,30 @@
+recommendation:
+  papers_per_day: 1
+  selection_method: random
+  exclude_sent: true
+
+publication:
+  years_back: 5
+  require_abstract: true
+
+summary:
+  language: ja
+  max_chars: 180
+  use_llm: true
+  fallback: skip  # skip or extractive (original abstract, without translation)
+
+slack:
+  show_topics: true
+  max_authors: 3
+  channel: default  # History label; the webhook determines the actual channel.
+
+collection:
+  dblp_api_url: https://dblp.org/search/publ/api
+  page_size: 1000
+  request_interval: 1.0
+  max_enrichment_attempts: 50
+  use_crossref: true
+
+http:
+  timeout_seconds: 30
+  max_retries: 3

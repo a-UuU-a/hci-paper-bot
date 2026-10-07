@@ -1,0 +1,54 @@
+name: Daily HCI Paper
+
+on:
+  schedule:
+    - cron: "0 22 * * *" # 07:00 JST
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Preview without Slack delivery or database writes
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+# Serializes scheduled and manual runs in this repository.
+concurrency:
+  group: hci-paper-delivery
+  cancel-in-progress: false
+
+jobs:
+  recommend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Set up Python
+        run: uv python install 3.12
+      - name: Install dependencies
+        run: uv sync --frozen --no-dev
+      - name: Run HCI Paper Bot
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4.1-mini' }}
+          OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}
+          METADATA_EMAIL: ${{ vars.METADATA_EMAIL }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            uv run --frozen --no-dev python -m src.main --dry-run
+          else
+            if [ -n "$DATABASE_URL" ]; then
+              uv run --frozen --no-dev python -m src.main --init-db
+            fi
+            uv run --frozen --no-dev python -m src.main
+          fi
