@@ -48,6 +48,8 @@ jobs:
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4.1-mini' }}
           OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}
           METADATA_EMAIL: ${{ vars.METADATA_EMAIL }}
+          PAPER_VENUES: ${{ vars.PAPER_VENUES }}
+          PAPER_YEAR: ${{ vars.PAPER_YEAR }}
         run: |
           if [ "$CHECK_DATABASE" = "true" ]; then
             uv run --frozen --no-dev python -m src.main --check-db

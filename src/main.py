@@ -11,7 +11,7 @@ from src.bot import run_bot
 from src.collectors.crossref import CrossrefCollector
 from src.collectors.dblp import DBLPCollector
 from src.collectors.openalex import OpenAlexCollector
-from src.config import DEFAULT_CONFIG_DIR, Credentials, load_config
+from src.config import DEFAULT_CONFIG_DIR, Credentials, apply_runtime_overrides, load_config
 from src.database.migrate import check_database_connection, migrate_database
 from src.database.orm import SQLAlchemyRepository, create_database_engine
 from src.database.supabase import MemoryRepository, SupabaseRepository
@@ -87,6 +87,7 @@ def main(argv: list[str] | None = None) -> int:
             migrate_database(credentials.database_url.get_secret_value())
             return 0
         settings, venues = load_config(args.config_dir)
+        settings, venues, year = apply_runtime_overrides(settings, venues, year=args.year)
         if args.no_llm:
             settings.summary.use_llm = False
         credentials.validate_for_run(settings, dry_run=args.dry_run)
@@ -151,7 +152,7 @@ def main(argv: list[str] | None = None) -> int:
                 summarizer=summarizer,
                 notifier=notifier,
                 dry_run=args.dry_run,
-                year=args.year,
+                year=year,
             )
     except BotError as exc:
         logger.error("%s", exc)

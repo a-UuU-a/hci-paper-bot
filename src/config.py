@@ -135,3 +135,30 @@ def load_config(config_dir: Path = DEFAULT_CONFIG_DIR) -> tuple[Settings, list[V
     if not any(venue.enabled for venue in venues):
         raise BotError("Enable at least one venue")
     return settings, venues
+
+
+def apply_runtime_overrides(
+    settings: Settings, venues: list[Venue], *, year: int | None = None
+) -> tuple[Settings, list[Venue], int | None]:
+    """Apply optional deployment filters without changing the shared YAML defaults."""
+    venue_ids = os.getenv("PAPER_VENUES", "").strip()
+    if venue_ids:
+        selected = {item.strip().lower() for item in venue_ids.split(",")}
+        if not selected <= {venue.id for venue in venues}:
+            raise BotError("PAPER_VENUES must contain comma-separated venue IDs from venues.yaml")
+        venues = [venue.model_copy(update={"enabled": venue.id in selected}) for venue in venues]
+
+    publication_year = os.getenv("PAPER_YEAR", "").strip()
+    if publication_year:
+        try:
+            override_year = int(publication_year)
+        except ValueError:
+            raise BotError("PAPER_YEAR must be an integer between 1900 and 2200") from None
+        if not 1900 <= override_year <= 2200:
+            raise BotError("PAPER_YEAR must be an integer between 1900 and 2200")
+        settings = settings.model_copy(deep=True)
+        settings.publication.years_back = 1
+        if year is None:
+            year = override_year
+
+    return settings, venues, year

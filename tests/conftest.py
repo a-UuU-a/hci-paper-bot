@@ -6,6 +6,13 @@ from src.http import RetryingHTTPClient
 from src.services.normalization import normalize_paper
 
 
+@pytest.fixture(autouse=True)
+def isolate_runtime_environment(monkeypatch):
+    monkeypatch.setattr("src.main.load_dotenv", lambda: None)
+    monkeypatch.delenv("PAPER_VENUES", raising=False)
+    monkeypatch.delenv("PAPER_YEAR", raising=False)
+
+
 @pytest.fixture
 def paper_factory():
     def make(**overrides):
